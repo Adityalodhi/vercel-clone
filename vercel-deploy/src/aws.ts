@@ -3,16 +3,18 @@ import AWS from "aws-sdk";
 import fs from "fs";
 import path from "path";
 
+
 const s3 = new AWS.S3({
-    region: 'us-east-1',
-    accessKeyId: 'AKIA2UC27G7TK7RX6IF6',
-     secretAccessKey: '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'
-});
+    region: process.env.AWS_REGION,
+    accessKeyId: process.env.AWS_ACCESS_KEY,
+     secretAccessKey: process.env.AWS_SECRET_KEY
+
+    });
 
 // output/asdasd
 export async function downloadS3Folder(prefix: string) {
     const allFiles = await s3.listObjectsV2({
-        Bucket: "project-vercel",
+        Bucket: process.env.S3_BUCKET_NAME,
         Prefix: prefix
     }).promise();
     
@@ -30,7 +32,7 @@ export async function downloadS3Folder(prefix: string) {
                 fs.mkdirSync(dirName, { recursive: true });
             }
             s3.getObject({
-                Bucket: "project-vercel",
+                Bucket:process.env.S3_BUCKET_NAME,
                 Key
             }).createReadStream().pipe(outputFile).on("finish", () => {
                 resolve("");
@@ -68,7 +70,7 @@ const uploadFile = async (fileName: string, localFilePath: string) => {
     const fileContent = fs.readFileSync(localFilePath);
     const response = await s3.upload({
         Body: fileContent,
-        Bucket: "project-vercel",
+        Bucket: process.env.S3_BUCKET_NAME,
         Key: fileName,
     }).promise();
     console.log(response);
